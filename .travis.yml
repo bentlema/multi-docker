@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t bentlema/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run bentlema/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t bentlema/multi-client ./client
+  - docker build -t bentlema/multi-nginx ./nginx
+  - docker build -t bentlema/multi-server ./server
+  - docker build -t bentlema/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push bentlema/multi-client
+  - docker push bentlema/multi-nginx
+  - docker push bentlema/multi-server
+  - docker push bentlema/multi-worker
+
